@@ -100,11 +100,20 @@ LOCAL_APPS = [
     # Comment
     'common.comment',
 
+    # Order
+    "common.order",
+
     # Product
     'common.product',
 
+    # Uom
+    'common.uom',
+
     # Users
     "common.users",
+
+    # Warehouse
+    "common.warehouse",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

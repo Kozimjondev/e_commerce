@@ -1,15 +1,39 @@
 from rest_framework import serializers
 from drf_base64.serializers import Base64ImageField
-
+# from api.warehouse.serializers import WarehouseProductShortSerializer
 from api.comment.serializers import CommentListSerializer
 from common.product.models import Product, ProductImage
+from common.warehouse.models import Warehouse, WarehouseProduct
 from config.settings.base import env
 
 
+class WarehouseProductShortSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WarehouseProduct
+        fields = ['id', 'quantity', ]
+
+
 class ProductShortSerializer(serializers.ModelSerializer):
+    totalQuantity = serializers.SerializerMethodField()
+    warehouse_product_quantity = serializers.SerializerMethodField()
+    # warehouseProducts = WarehouseProductShortSerializer(many=True)
+
+    def get_warehouse_product_quantity(self, obj):
+        warehouses = self.context['warehouses']
+        data = {}
+        for warehouse in warehouses:
+            warehouse_product = obj.warehouseproducts.filter(warehouse=warehouse.id).first()
+            data[warehouse.id] = warehouse_product.quantity if warehouse_product else 0
+        return data
+
+    def get_totalQuantity(self, obj):
+        if hasattr(obj, 'totalQuantity'):
+            return obj.totalQuantity or 0
+        return 0
+
     class Meta:
         model = Product
-        fields = ['id', 'guid', 'name', 'price']
+        fields = ['id', 'guid', 'name', 'warehouse_product_quantity', 'totalQuantity',]# 'warehouseProducts']
 
 
 class ProductImageListSerializer(serializers.ModelSerializer):

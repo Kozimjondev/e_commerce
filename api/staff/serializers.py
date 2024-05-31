@@ -21,6 +21,12 @@ class StaffCreateSerializer(serializers.ModelSerializer):
         fields = ('id', 'guid', 'username', 'name', 'password')
 
 
+class StaffShortSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'guid', 'name', )
+
+
 class StaffSerializer(serializers.ModelSerializer):
     class Meta:
         model = User

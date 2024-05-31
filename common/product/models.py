@@ -33,9 +33,7 @@ class ProductImage(BaseModel):
     def save(self, *args, **kwargs):
         if self.isMain:
             with transaction.atomic():
-                # Set isMain=False for all other images of this product
                 ProductImage.objects.filter(product=self.product, isMain=True).update(isMain=False)
-        # Save the current instance
         super().save(*args, **kwargs)
 
 

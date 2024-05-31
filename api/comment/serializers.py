@@ -5,8 +5,6 @@ from common.comment.models import Comment
 
 class CommentCreateSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
-    guid = serializers.CharField(read_only=True)
-    id = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Comment

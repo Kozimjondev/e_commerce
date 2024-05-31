@@ -1,11 +1,13 @@
+from django.db.models import Prefetch
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 
 from common.product.models import Product
+from .permissions import IsOwnerOrAdmin
 from .serializers import CartCreateSerializer, \
-    CartProductListSerializer
+    CartProductListSerializer, WishlistCreateSerializer, WishlistProductCreateSerializer
 from rest_framework.response import Response
-from common.cart.models import Cart, CartProduct
+from common.cart.models import Cart, CartProduct, Wishlist, WishlistProducts
 from ..product.serializers import ProductListSerializer
 
 
@@ -56,4 +58,36 @@ class CartViewSet(viewsets.ModelViewSet):
             cartProduct.quantity -= 1
             cartProduct.save()
             return Response({'quantity': cartProduct.quantity})
+
+
+class WishlistViewSet(viewsets.ModelViewSet):
+    queryset = Wishlist.objects.all().select_related('user')
+    serializer_class = WishlistCreateSerializer
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
+    lookup_field = 'guid'
+    http_method_names = ['get']
+
+    def list(self, request, *args, **kwargs):
+        self.queryset = Wishlist.objects.prefetch_related(
+            Prefetch(
+                lookup='wishlistWishlistProducts',
+                queryset=WishlistProducts.objects.select_related('product')
+            )
+        )
+        return super().list(request, *args, **kwargs)
+
+    @action(methods=['GET'], detail=False)
+    def add(self, request, *args, **kwargs):
+        product = request.query_params.get('product')
+        print(product)
+        wishlist, created = Wishlist.objects.get_or_create(user=request.user)
+        wishlistProduct = WishlistProducts.objects.filter(wishlist=wishlist, product_id=product).first()
+        if wishlistProduct is None:
+            wishlistProduct = WishlistProducts.objects.create(wishlist=wishlist, product_id=product)
+            print(wishlist)
+            wishlistProduct.save()
+        else:
+            wishlistProduct.delete()
+            return Response({"data": "Removed from wishlist"}, status=status.HTTP_204_NO_CONTENT)
+        return Response({"data": "Added to wishlist"}, status=status.HTTP_201_CREATED)
 

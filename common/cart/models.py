@@ -27,3 +27,26 @@ class CartProduct(BaseModel):
     @property
     def total_price(self):
         return self.product.price * self.quantity
+
+
+class Wishlist(BaseModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE,
+                             related_name="userWishlist", blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.id}"
+
+
+class WishlistProducts(BaseModel):
+    wishlist = models.ForeignKey(Wishlist, on_delete=models.CASCADE,
+                                 related_name="wishlistWishlistProducts", blank=True, null=True)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE,
+                                related_name="productWishlistProducts", blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.id}"
+
+    class Meta:
+        # unique_together = (("user", "product"),)
+        verbose_name = "Wishlist Product"
+        verbose_name_plural = "Wishlist Products"

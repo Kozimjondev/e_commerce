@@ -10,7 +10,6 @@ User = get_user_model()
 
 
 class LoginAPIView(CreateAPIView):
-    queryset = User.objects.all()
     serializer_class = LoginSerializer
 
     def post(self, request, *args, **kwargs):
