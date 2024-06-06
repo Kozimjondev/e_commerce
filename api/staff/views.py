@@ -17,7 +17,7 @@ class StaffAPIView(ListAPIView):
     permission_classes = (IsAuthenticated, )
 
     def list(self, request, *args, **kwargs):
-        print(request.user.username)
+        print(request.user.phone)
         return super().list(request, *args, **kwargs)
 
 

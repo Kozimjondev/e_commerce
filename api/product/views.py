@@ -1,5 +1,5 @@
 from decimal import Decimal
-from django.db.models import Prefetch, Count, Sum
+from django.db.models import Prefetch, Count, Sum, F, DecimalField, ExpressionWrapper
 from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
@@ -15,7 +15,17 @@ class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.select_related('category').prefetch_related(
         Prefetch(
             'productComment', queryset=Comment.objects.select_related('user')
-        )).annotate(total_comments=Count('productComment'))
+        )
+    ).annotate(
+        total_comments=Count('productComment'),
+        total_amount=Sum('productReceiptProduct__totalAmount'),
+        total_quantity=Sum('productReceiptProduct__quantity')
+    ).annotate(
+        calculated_price=ExpressionWrapper(
+            F('total_amount') / F('total_quantity'),
+            output_field=DecimalField(max_digits=50, decimal_places=6)
+        )
+    )
     serializer_class = ProductCreateSerializer
     lookup_field = 'guid'
 
@@ -53,22 +63,23 @@ class ProductImageViewSet(viewsets.ModelViewSet):
 
 
 class RemainingProductViewSet(viewsets.ModelViewSet):
-    queryset = Product.objects.select_related('category').prefetch_related('productWarehouseProduct')
+    queryset = Product.objects.select_related('category').prefetch_related('productWarehouseProduct__warehouse')
     serializer_class = ProductCreateSerializer
     http_method_names = ['get']
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
 
-        queryset = queryset.prefetch_related(
-            Prefetch(
-                lookup='productWarehouseProduct',
-                queryset=WarehouseProduct.objects.all(),
-            )
-        ).annotate(totalQuantity=Sum('productWarehouseProduct__quantity'))
+        queryset = queryset.annotate(totalQuantity=Sum('productWarehouseProduct__quantity'))#.prefetch_related(
+        #     Prefetch(
+        #         lookup='productWarehouseProduct',
+        #         queryset=WarehouseProduct.objects.all(),
+        #         to_attr='warehouseProduct'
+        #     )
+        # )
         warehouses = Warehouse.objects.all()
-        products = []
-        totalQuantity = Decimal(0)
+        # products = []
+        # totalQuantity = Decimal(0)
 
         # for product in queryset:
         #     data = {

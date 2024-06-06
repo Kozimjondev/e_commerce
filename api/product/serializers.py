@@ -22,8 +22,8 @@ class ProductShortSerializer(serializers.ModelSerializer):
         warehouses = self.context['warehouses']
         data = {}
         for warehouse in warehouses:
-            warehouse_product = obj.warehouseproducts.filter(warehouse=warehouse.id).first()
-            data[warehouse.id] = warehouse_product.quantity if warehouse_product else 0
+            matching_products = [p for p in obj.productWarehouseProduct.all() if p.warehouse.id == warehouse.id]
+            data[warehouse.id] = sum(p.quantity for p in matching_products) if matching_products else 0
         return data
 
     def get_totalQuantity(self, obj):
@@ -61,6 +61,8 @@ class ProductImageCreateSerializer(serializers.ModelSerializer):
 
 
 class ProductCreateSerializer(serializers.ModelSerializer):
+    # calculated_price = serializers.SerializerMethodField()
+
     class Meta:
         model = Product
         fields = ['id', 'guid', 'category', 'name', 'price', 'description', 'quantity']
@@ -68,6 +70,16 @@ class ProductCreateSerializer(serializers.ModelSerializer):
 
 class ProductListSerializer(serializers.ModelSerializer):
     productImages = serializers.SerializerMethodField()
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['price'] = instance.calculated_price
+        return ret
+
+    # def get_calculated_price(self, obj):
+    #     if hasattr(obj, 'calculated_price') and obj.calculated_price is not None:
+    #         return obj.calculated_price
+    #     return 0
 
     def get_productImages(self, product):
         if hasattr(product, 'productImages'):

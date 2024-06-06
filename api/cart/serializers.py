@@ -13,7 +13,7 @@ class CartCreateSerializer(serializers.ModelSerializer):
 
 
 class CartListSerializer(serializers.ModelSerializer):
-    user = serializers.CharField(source='user.username')
+    user = serializers.CharField(source='user.phone')
 
     class Meta:
         model = Cart

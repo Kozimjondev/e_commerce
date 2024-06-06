@@ -11,23 +11,23 @@ User = get_user_model()
 class LoginSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     guid = serializers.CharField(read_only=True)
-    username = serializers.CharField(required=True)
+    phone = serializers.CharField(required=True)
     password = serializers.CharField(required=True, write_only=True)
     refresh = serializers.CharField(read_only=True)
     access = serializers.CharField(read_only=True)
 
     def validate(self, attrs):
-        username = attrs.get('username')
+        phone = attrs.get('phone')
         password = attrs.get('password')
         # user = User.objects.filter(username=username).first()
-        user = authenticate(username=username, password=password)
+        user = authenticate(phone=phone, password=password)
         if not user:
             raise serializers.ValidationError("User not found")
         refresh = RefreshToken.for_user(user)
         return {
             'id': user.id,
             'guid': user.guid,
-            'username': user.username,
+            'phone': user.phone,
             'refresh': str(refresh),
             'access': str(refresh.access_token),
         }
@@ -65,7 +65,6 @@ class ChangePasswordSerializer(serializers.Serializer):
 
     def validate_old_password(self, value):
         user = self.context['request'].user
-        print(user.username)
         if not user.check_password(value):
             raise serializers.ValidationError("Incorrect password")
         return value

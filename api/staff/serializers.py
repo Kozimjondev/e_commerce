@@ -18,7 +18,7 @@ class StaffCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'guid', 'username', 'name', 'password')
+        fields = ('id', 'guid', 'phone', 'name', 'password')
 
 
 class StaffShortSerializer(serializers.ModelSerializer):
@@ -30,7 +30,7 @@ class StaffShortSerializer(serializers.ModelSerializer):
 class StaffSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'guid', 'username', 'name', )
+        fields = ('id', 'guid', 'phone', 'name', )
 
 
 class StaffDetailSerializer(serializers.ModelSerializer):

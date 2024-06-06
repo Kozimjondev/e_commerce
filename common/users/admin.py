@@ -12,7 +12,7 @@ if settings.DJANGO_ADMIN_FORCE_ALLAUTH:
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ["username", "name", "is_superuser"]
+    list_display = ["username", "id", "name", "is_superuser"]
     search_fields = ["name"]
     exclude = ["created_at", "updated_at"]
 
@@ -21,4 +21,3 @@ class UserAdmin(admin.ModelAdmin):
         if obj.password:
             obj.password = hashers.make_password(password=obj.password)
         super().save_model(request, obj, form, change)
-

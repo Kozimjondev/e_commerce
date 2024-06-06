@@ -4,12 +4,9 @@ from django.db import models
 
 from common.base import BaseModel
 from common.product.models import Product
+from common.validators import phone_number_validator
 
 User = get_user_model()
-
-phone_number_validator = RegexValidator(
-    regex=r'^\+?1?\d{9,15}$',
-)
 
 
 class Payment(models.IntegerChoices):
@@ -37,7 +34,7 @@ class Address(BaseModel):
 class Order(BaseModel):
     user = models.ForeignKey(User, related_name="userOrder", on_delete=models.CASCADE, null=True, blank=True)
     address = models.ForeignKey(Address, related_name="addressOrder", on_delete=models.SET_NULL, null=True)
-    phone = models.CharField(max_length=15, null=True, blank=True, validators=[phone_number_validator])
+    phone = models.CharField(max_length=15, null=True, blank=True, validators=[phone_number_validator()])
     comment = models.TextField(null=True, blank=True)
     paymentType = models.IntegerField(choices=Payment.choices, default=Payment.CASH)
     status = models.IntegerField(choices=OrderStatus.choices, default=OrderStatus.PIN)
